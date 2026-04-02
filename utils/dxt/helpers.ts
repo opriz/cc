@@ -1,4 +1,4 @@
-import type { McpbManifest } from '@anthropic-ai/mcpb'
+import type { McpbManifest } from '../../stubs/mcpb.js'
 import { errorMessage } from '../errors.js'
 import { jsonParse } from '../slowOperations.js'
 
