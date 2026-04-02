@@ -1,6 +1,15 @@
 # 构建补丁文件说明
 
-相比上游 `claude-code`，本仓库新增了 50 个文件以支持本地构建。这些文件分三类。
+相比上游 `claude-code`，本仓库新增了 50 个文件、修改了 6 个文件以支持本地构建。
+
+## 快速开始
+
+```bash
+bun install
+npm run build
+```
+
+---
 
 ---
 
@@ -17,6 +26,8 @@
 1. 通过 `features` 列表开启/关闭功能模块（死代码消除）
 2. 通过 `alias` 把无法安装的私有包重定向到本地 stub
 
+**注意**：Bun 的 `alias` 只对动态 `import()` 生效，对静态 `import ... from 'xxx'` 无效。因此部分文件需要直接修改源码 import 路径（见第四节）。
+
 ---
 
 ## 二、依赖 Stub（9 个）
@@ -25,15 +36,15 @@
 
 | Stub 文件 | 替换的包 | 实现方式 |
 |-----------|---------|---------|
-| `stubs/bedrock-sdk.ts` | `@anthropic-ai/bedrock-sdk` | 空构造函数 |
-| `stubs/vertex-sdk.ts` | `@anthropic-ai/vertex-sdk` | 空构造函数 |
-| `stubs/foundry-sdk.ts` | `@anthropic-ai/foundry-sdk` | 空构造函数 |
-| `stubs/mcpb.ts` | `@anthropic-ai/mcpb` | 仅导出类型 |
-| `stubs/sandbox-runtime.ts` | `@anthropic-ai/sandbox-runtime` | 空导出 |
-| `stubs/ant-chrome-mcp.ts` | `@ant/claude-for-chrome-mcp` | `BROWSER_TOOLS = []` |
-| `stubs/sharp.ts` | `sharp`（原生图像处理） | 调用时抛错 |
-| `stubs/turndown.ts` | `turndown`（HTML→Markdown） | 原样返回 HTML |
-| `stubs/mcpb.ts` | `@anthropic-ai/mcpb` | 仅导出类型 |
+| `stubs/bedrock-sdk.ts` | `@anthropic-ai/bedrock-sdk` | 空构造函数（via alias） |
+| `stubs/vertex-sdk.ts` | `@anthropic-ai/vertex-sdk` | 空构造函数（via alias） |
+| `stubs/foundry-sdk.ts` | `@anthropic-ai/foundry-sdk` | 空构造函数（via alias） |
+| `stubs/mcpb.ts` | `@anthropic-ai/mcpb` | 类型导出（via 源码重定向） |
+| `stubs/sandbox-runtime.ts` | `@anthropic-ai/sandbox-runtime` | 完整静态方法 stub（via 源码重定向） |
+| `stubs/ant-chrome-mcp.ts` | `@ant/claude-for-chrome-mcp` | `BROWSER_TOOLS = []`（via 源码重定向） |
+| `stubs/sharp.ts` | `sharp`（原生图像处理） | 调用时抛错（via alias） |
+| `stubs/turndown.ts` | `turndown`（HTML→Markdown） | 原样返回 HTML（via alias） |
+| `native-ts/color-diff/` | `color-diff-napi`（原生颜色 diff） | 纯 TS 完整实现（via 源码重定向） |
 
 ---
 
@@ -76,6 +87,20 @@
 
 ---
 
+## 四、源码 Import 重定向（6 个文件）
+
+Bun `alias` 对静态 `import ... from 'pkg'` 无效，这些文件的 import 路径已直接改为指向本地 stub：
+
+| 文件 | 原 import | 改为 |
+|------|----------|------|
+| `components/StructuredDiff/colorDiff.ts` | `color-diff-napi` | `../../native-ts/color-diff/index.js` |
+| `utils/claudeInChrome/setup.ts` | `@ant/claude-for-chrome-mcp` | `../../stubs/ant-chrome-mcp.js` |
+| `skills/bundled/claudeInChrome.ts` | `@ant/claude-for-chrome-mcp` | `../../stubs/ant-chrome-mcp.js` |
+| `utils/dxt/helpers.ts` | `@anthropic-ai/mcpb` | `../../stubs/mcpb.js` |
+| `utils/sandbox/sandbox-adapter.ts` | `@anthropic-ai/sandbox-runtime` | `../../stubs/sandbox-runtime.js` |
+
+---
+
 ## 功能影响评估
 
 ### 受影响（有实质降级）
@@ -102,4 +127,5 @@
 | 所有核心工具（Bash、文件、Git 等）| 无依赖 stub |
 | MCP 服务器集成 | 不依赖 mcpb stub |
 | 插件、Skill、Agent 系统 | 不依赖任何 stub |
-| `mcpb` / `sandbox-runtime` / `ant-chrome-mcp` | 仅内部/沙箱场景触发，普通用户不涉及 |
+| `mcpb` / `ant-chrome-mcp` | 仅内部/沙箱场景触发，普通用户不涉及 |
+| `sandbox-runtime` | stub 返回 `isSupportedPlatform() = false`，沙箱功能关闭但不崩溃 |
