@@ -87,12 +87,12 @@ export function clearWebFetchCache(): void {
 // calls (construction builds 15 rule objects; .turndown() is stateless).
 // @types/turndown ships only `export =` (no .d.mts), so TS types the import
 // as the class itself while Bun wraps CJS in { default } — hence the cast.
-type TurndownCtor = typeof import('turndown')
+type TurndownCtor = typeof import('../../stubs/turndown.js')
 let turndownServicePromise: Promise<InstanceType<TurndownCtor>> | undefined
 function getTurndownService(): Promise<InstanceType<TurndownCtor>> {
-  return (turndownServicePromise ??= import('turndown').then(m => {
-    const Turndown = (m as unknown as { default: TurndownCtor }).default
-    return new Turndown()
+  return (turndownServicePromise ??= import('../../stubs/turndown.js').then(m => {
+    const Turndown = (m as unknown as { default: TurndownCtor }).default ?? m
+    return new (Turndown as unknown as new () => InstanceType<TurndownCtor>)()
   }))
 }
 

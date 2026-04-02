@@ -6,7 +6,7 @@ import {
   type DataPoint as OTelDataPoint,
   type PushMetricExporter,
   type ResourceMetrics,
-} from '@opentelemetry/sdk-metrics'
+} from '../../stubs/opentelemetry-sdk-metrics.js'
 import axios from 'axios'
 import { checkMetricsEnabled } from 'src/services/api/metricsOptOut.js'
 import { getIsNonInteractiveSession } from '../../bootstrap/state.js'
