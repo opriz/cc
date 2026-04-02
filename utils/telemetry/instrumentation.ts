@@ -18,7 +18,7 @@ import {
   ConsoleMetricExporter,
   MeterProvider,
   PeriodicExportingMetricReader,
-} from '@opentelemetry/sdk-metrics'
+} from '../../stubs/opentelemetry-sdk-metrics.js'
 import {
   BasicTracerProvider,
   BatchSpanProcessor,
@@ -167,21 +167,21 @@ async function getOtlpReaders() {
           // Lazy-import to keep @grpc/grpc-js (~700KB) out of the telemetry chunk
           // when the protocol is http/protobuf (ant default) or http/json.
           const { OTLPMetricExporter } = await import(
-            '@opentelemetry/exporter-metrics-otlp-grpc'
+            '../../stubs/opentelemetry-exporter.js'
           )
           exporters.push(new OTLPMetricExporter())
           break
         }
         case 'http/json': {
           const { OTLPMetricExporter } = await import(
-            '@opentelemetry/exporter-metrics-otlp-http'
+            '../../stubs/opentelemetry-exporter.js'
           )
           exporters.push(new OTLPMetricExporter(httpConfig))
           break
         }
         case 'http/protobuf': {
           const { OTLPMetricExporter } = await import(
-            '@opentelemetry/exporter-metrics-otlp-proto'
+            '../../stubs/opentelemetry-exporter.js'
           )
           exporters.push(new OTLPMetricExporter(httpConfig))
           break
@@ -193,7 +193,7 @@ async function getOtlpReaders() {
       }
     } else if (exporterType === 'prometheus') {
       const { PrometheusExporter } = await import(
-        '@opentelemetry/exporter-prometheus'
+        '../../stubs/opentelemetry-exporter.js'
       )
       exporters.push(new PrometheusExporter())
     } else {
@@ -236,21 +236,21 @@ async function getOtlpLogExporters() {
       switch (protocol) {
         case 'grpc': {
           const { OTLPLogExporter } = await import(
-            '@opentelemetry/exporter-logs-otlp-grpc'
+            '../../stubs/opentelemetry-exporter.js'
           )
           exporters.push(new OTLPLogExporter())
           break
         }
         case 'http/json': {
           const { OTLPLogExporter } = await import(
-            '@opentelemetry/exporter-logs-otlp-http'
+            '../../stubs/opentelemetry-exporter.js'
           )
           exporters.push(new OTLPLogExporter(httpConfig))
           break
         }
         case 'http/protobuf': {
           const { OTLPLogExporter } = await import(
-            '@opentelemetry/exporter-logs-otlp-proto'
+            '../../stubs/opentelemetry-exporter.js'
           )
           exporters.push(new OTLPLogExporter(httpConfig))
           break
@@ -287,21 +287,21 @@ async function getOtlpTraceExporters() {
       switch (protocol) {
         case 'grpc': {
           const { OTLPTraceExporter } = await import(
-            '@opentelemetry/exporter-trace-otlp-grpc'
+            '../../stubs/opentelemetry-exporter.js'
           )
           exporters.push(new OTLPTraceExporter())
           break
         }
         case 'http/json': {
           const { OTLPTraceExporter } = await import(
-            '@opentelemetry/exporter-trace-otlp-http'
+            '../../stubs/opentelemetry-exporter.js'
           )
           exporters.push(new OTLPTraceExporter(httpConfig))
           break
         }
         case 'http/protobuf': {
           const { OTLPTraceExporter } = await import(
-            '@opentelemetry/exporter-trace-otlp-proto'
+            '../../stubs/opentelemetry-exporter.js'
           )
           exporters.push(new OTLPTraceExporter(httpConfig))
           break
@@ -359,8 +359,8 @@ async function initializeBetaTracing(
   }
 
   const [{ OTLPTraceExporter }, { OTLPLogExporter }] = await Promise.all([
-    import('@opentelemetry/exporter-trace-otlp-http'),
-    import('@opentelemetry/exporter-logs-otlp-http'),
+    import('../../stubs/opentelemetry-exporter.js'),
+    import('../../stubs/opentelemetry-exporter.js'),
   ])
 
   const httpConfig = {
