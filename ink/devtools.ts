@@ -1,0 +1,2 @@
+// React devtools stub
+export {}
