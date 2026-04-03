@@ -299,37 +299,55 @@ export const setupGracefulShutdown = memoize(() => {
   // Log uncaught exceptions for container observability and analytics
   // Error names (e.g., "TypeError") are not sensitive - safe to log
   process.on('uncaughtException', error => {
-    logForDiagnosticsNoPII('error', 'uncaught_exception', {
-      error_name: error.name,
-      error_message: error.message.slice(0, 2000),
-    })
-    logEvent('tengu_uncaught_exception', {
-      error_name:
-        error.name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-    })
+    try {
+      const errorName =
+        error instanceof Error
+          ? error.name
+          : typeof error === 'string'
+            ? 'string'
+            : 'unknown'
+      const errorMessage =
+        error instanceof Error
+          ? error.message.slice(0, 2000)
+          : String(error).slice(0, 2000)
+      logForDiagnosticsNoPII('error', 'uncaught_exception', {
+        error_name: errorName,
+        error_message: errorMessage,
+      })
+      logEvent('tengu_uncaught_exception', {
+        error_name:
+          errorName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+      })
+    } catch {
+      // Prevent logging failures from re-triggering uncaughtException
+    }
   })
 
   // Log unhandled promise rejections for container observability and analytics
   process.on('unhandledRejection', reason => {
-    const errorName =
-      reason instanceof Error
-        ? reason.name
-        : typeof reason === 'string'
-          ? 'string'
-          : 'unknown'
-    const errorInfo =
-      reason instanceof Error
-        ? {
-            error_name: reason.name,
-            error_message: reason.message.slice(0, 2000),
-            error_stack: reason.stack?.slice(0, 4000),
-          }
-        : { error_message: String(reason).slice(0, 2000) }
-    logForDiagnosticsNoPII('error', 'unhandled_rejection', errorInfo)
-    logEvent('tengu_unhandled_rejection', {
-      error_name:
-        errorName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-    })
+    try {
+      const errorName =
+        reason instanceof Error
+          ? reason.name
+          : typeof reason === 'string'
+            ? 'string'
+            : 'unknown'
+      const errorInfo =
+        reason instanceof Error
+          ? {
+              error_name: reason.name,
+              error_message: reason.message.slice(0, 2000),
+              error_stack: reason.stack?.slice(0, 4000),
+            }
+          : { error_message: String(reason).slice(0, 2000) }
+      logForDiagnosticsNoPII('error', 'unhandled_rejection', errorInfo)
+      logEvent('tengu_unhandled_rejection', {
+        error_name:
+          errorName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+      })
+    } catch {
+      // Prevent logging failures from re-triggering unhandledRejection
+    }
   })
 })
 
