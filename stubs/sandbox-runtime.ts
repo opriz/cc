@@ -24,6 +24,10 @@ export class SandboxManager {
   static getLinuxSocksSocketPath() { return null }
   static waitForNetworkInitialization() { return Promise.resolve() }
   static getSandboxViolationStore() { return new SandboxViolationStore() }
+  static annotateStderrWithSandboxFailures(_command: string, stderr: string) {
+    return stderr
+  }
+  static cleanupAfterCommand() {}
 }
 
 export const SandboxRuntimeConfigSchema = {

@@ -9,7 +9,7 @@ import { isAnthropicAuthEnabled } from '../utils/auth.js';
 import { normalizeApiKeyForConfig } from '../utils/authPortable.js';
 import { getCustomApiKeyStatus } from '../utils/config.js';
 import { env } from '../utils/env.js';
-import { isRunningOnHomespace } from '../utils/envUtils.js';
+import { isEnvTruthy, isRunningOnHomespace } from '../utils/envUtils.js';
 import { PreflightStep } from '../utils/preflightChecks.js';
 import type { ThemeSetting } from '../utils/theme.js';
 import { ApproveApiKey } from './ApproveApiKey.js';
@@ -114,7 +114,11 @@ export function Onboarding({
     goToNextStep();
   }
   const steps: OnboardingStep[] = [];
-  if (oauthEnabled) {
+  // 默认跳过预检；需要连通性检查时可设 CLAUDE_CODE_ENABLE_ONBOARDING_PREFLIGHT=1
+  const runOnboardingPreflight = isEnvTruthy(
+    process.env.CLAUDE_CODE_ENABLE_ONBOARDING_PREFLIGHT,
+  );
+  if (oauthEnabled && runOnboardingPreflight) {
     steps.push({
       id: 'preflight',
       component: preflightStep
