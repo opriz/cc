@@ -94,6 +94,7 @@ export const PREAPPROVED_HOSTS = new Set([
   'spark.apache.org', // Apache Spark
   'huggingface.co', // Hugging Face
   'www.kaggle.com', // Kaggle
+  'ollama.com', // Ollama - local LLM tool
 
   // Databases
   'www.mongodb.com', // MongoDB
