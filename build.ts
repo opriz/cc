@@ -28,6 +28,7 @@ const result = await build({
     'TASK_UPDATE',
     'ENTER_PLAN_MODE',
     'BRIDGE_MODE',
+    'BUDDY',
     // Disabled - source files not present:
     // 'KAIROS' / 'PROACTIVE' / 'KAIROS_BRIEF' -> assistant/, proactive/
     // 'DAEMON'                 -> daemon/
