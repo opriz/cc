@@ -197,6 +197,42 @@ function extractNestedErrorMessage(error: APIError): string | null {
   return null
 }
 
+/**
+ * Safely gets a header value from an error object.
+ * Handles both Web API Headers (with get method) and plain objects.
+ */
+export function getErrorHeader(
+  error: unknown,
+  headerName: string,
+): string | null | undefined {
+  if (!error || typeof error !== 'object') {
+    return undefined
+  }
+
+  const headers = (error as { headers?: unknown }).headers
+  if (!headers) {
+    return undefined
+  }
+
+  // Handle Web API Headers (has get method)
+  if (
+    typeof (headers as { get?: (name: string) => string | null }).get ===
+    'function'
+  ) {
+    return (headers as { get: (name: string) => string | null }).get(headerName)
+  }
+
+  // Handle plain object (Record<string, string>)
+  if (typeof headers === 'object' && headers !== null) {
+    return ((headers as Record<string, unknown>)[headerName] as
+      | string
+      | null
+      | undefined)
+  }
+
+  return undefined
+}
+
 export function formatAPIError(error: APIError): string {
   // Extract connection error details from the cause chain
   const connectionDetails = extractConnectionErrorDetails(error)

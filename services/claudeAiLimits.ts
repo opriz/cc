@@ -161,6 +161,26 @@ export function getRawUtilization(): RawUtilization {
   return rawUtilization
 }
 
+/**
+ * Convert headers to globalThis.Headers if needed.
+ * Handles both Web API Headers and plain objects.
+ */
+function normalizeHeaders(headers: unknown): globalThis.Headers {
+  if (headers instanceof globalThis.Headers) {
+    return headers
+  }
+  // Handle plain object (Record<string, string>)
+  if (typeof headers === 'object' && headers !== null) {
+    return new globalThis.Headers(
+      Object.entries(headers).filter(
+        ([_, v]) => v !== undefined,
+      ) as [string, string][],
+    )
+  }
+  // eslint-disable-next-line eslint-plugin-n/no-unsupported-features/node-builtins
+  return new globalThis.Headers()
+}
+
 function extractRawUtilization(headers: globalThis.Headers): RawUtilization {
   const result: RawUtilization = {}
   for (const [key, abbrev] of [
@@ -496,7 +516,8 @@ export function extractQuotaStatusFromError(error: APIError): void {
     let newLimits = { ...currentLimits }
     if (error.headers) {
       // Process headers (applies mocks from /mock-limits command if active)
-      const headersToUse = processRateLimitHeaders(error.headers)
+      // Normalize headers to handle both Web API Headers and plain objects
+      const headersToUse = processRateLimitHeaders(normalizeHeaders(error.headers))
       rawUtilization = extractRawUtilization(headersToUse)
       newLimits = computeNewLimitsFromHeaders(headersToUse)
 

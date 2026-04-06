@@ -41,9 +41,16 @@ export async function fireCompanionObserver(
       promptMessages: [
         createUserMessage({
           content:
-            `You are ${name}, a small ${species} watching a coding session. ${personality}\n\n` +
-            `The assistant just said: "${lastText}"\n\n` +
-            `React in ONE line, 5–10 words, in character. Output only the reaction text, no quotes.`,
+            `You are ${name}, a small ${species} silently watching a coding session from the corner of the screen. ${personality}\n\n` +
+            `The assistant just responded with:\n"${lastText}"\n\n` +
+            `Write a reaction in EXACTLY this format — two lines, nothing else:\n` +
+            `*[brief physical action, 3–6 words]*\n` +
+            `[one terse observation about the code/situation, ≤8 words, cryptic or wry]\n\n` +
+            `Examples of the right tone:\n` +
+            `*glances at table, nods once*\nThree orphans, three callers. Chain finally links.\n\n` +
+            `*tilts head slowly*\nSeven layers deep. Was one not enough?\n\n` +
+            `*blinks*\nThe error knew. You didn't.\n\n` +
+            `Output only the two lines. No quotes, no explanation.`,
         }),
       ],
       cacheSafeParams,
@@ -65,8 +72,6 @@ export async function fireCompanionObserver(
       .map(b => b.text)
       .join('')
       .trim()
-      .split('\n')[0]
-      ?.trim()
 
     if (text) onReaction(text)
   } catch {

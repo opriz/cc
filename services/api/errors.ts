@@ -49,7 +49,11 @@ import {
   type OverageDisabledReason,
 } from '../claudeAiLimits.js'
 import { shouldProcessRateLimits } from '../rateLimitMocking.js' // Used for /mock-limits command
-import { extractConnectionErrorDetails, formatAPIError } from './errorUtils.js'
+import {
+  extractConnectionErrorDetails,
+  formatAPIError,
+  getErrorHeader,
+} from './errorUtils.js'
 
 export const API_ERROR_MESSAGE_PREFIX = 'API Error'
 
@@ -468,11 +472,13 @@ export function getAssistantMessageFromError(
     shouldProcessRateLimits(isClaudeAISubscriber())
   ) {
     // Check if this is the new API with multiple rate limit headers
-    const rateLimitType = error.headers?.get?.(
+    const rateLimitType = getErrorHeader(
+      error,
       'anthropic-ratelimit-unified-representative-claim',
     ) as 'five_hour' | 'seven_day' | 'seven_day_opus' | null
 
-    const overageStatus = error.headers?.get?.(
+    const overageStatus = getErrorHeader(
+      error,
       'anthropic-ratelimit-unified-overage-status',
     ) as 'allowed' | 'allowed_warning' | 'rejected' | null
 
@@ -486,7 +492,8 @@ export function getAssistantMessageFromError(
       }
 
       // Extract rate limit information from headers
-      const resetHeader = error.headers?.get?.(
+      const resetHeader = getErrorHeader(
+        error,
         'anthropic-ratelimit-unified-reset',
       )
       if (resetHeader) {
@@ -501,14 +508,16 @@ export function getAssistantMessageFromError(
         limits.overageStatus = overageStatus
       }
 
-      const overageResetHeader = error.headers?.get?.(
+      const overageResetHeader = getErrorHeader(
+        error,
         'anthropic-ratelimit-unified-overage-reset',
       )
       if (overageResetHeader) {
         limits.overageResetsAt = Number(overageResetHeader)
       }
 
-      const overageDisabledReason = error.headers?.get?.(
+      const overageDisabledReason = getErrorHeader(
+        error,
         'anthropic-ratelimit-unified-overage-disabled-reason',
       ) as OverageDisabledReason | null
       if (overageDisabledReason) {
